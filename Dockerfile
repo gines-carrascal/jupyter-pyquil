@@ -24,23 +24,22 @@ RUN apt-get update && apt-get -yq dist-upgrade && \
     sed -i 's/<policy domain="path" rights="none"/<policy domain="path" rights="read|write"/g' /etc/ImageMagick-6/policy.xml && \
     rm -rf /var/lib/apt/lists/*
 
-ADD . /src/pyquil
+ADD ./src/pyquil /src/pyquil
 
 RUN chown -R jovyan.users /src
 
 # Switch back to jovyan to avoid accidental container runs as root
 USER jovyan
 
-# copy over files 
+ADD ./sample /home/jovyan/sample
+ADD ./texmf/tex/generic/pgf/quantikz/ /home/jovyan/texmf/tex/generic/pgf/quantikz/
 
-WORKDIR /src/pyquil
-RUN mkdir  -p ~/texmf/tex/generic/pgf/quantikz && \
-    mv tikzlibraryquantikz.code.tex ~/texmf/tex/generic/pgf/quantikz/ 
-    
 # install pyquil
 RUN python -m pip install pyquil && \
     python -m pip install pdflatex && \
     python -m pip install convert
+
+ADD ./LICENSE /home/jovyan/LICENSE
 
 # use an entrypoint script to add startup commands (qvm & quilc server spinup)
 ENTRYPOINT ["tini", "-g", "--"]
